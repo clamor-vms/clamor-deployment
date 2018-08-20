@@ -22,12 +22,12 @@ from subprocess import Popen, PIPE
 
 
 class ProcessHandlerMixin(object):
-    def run(self, command):
-        self.__direct_command_output(Popen(command, stdout=PIPE, stderr=PIPE))
+    def run_process(self, command, cwd):
+        self.__direct_command_output(Popen(command, stdout=PIPE, stderr=PIPE, cwd=cwd))
 
-    def pipe(self, sourceCommand, targetCommand):
-        process = Popen(sourceCommand, stdout=PIPE)
-        process2 = Popen(targetCommand, stdin=process.stdout, stdout=PIPE, stderr=PIPE, env=os.environ)
+    def pipe_processes(self, sourceCommand, targetCommand, cwd):
+        process = Popen(sourceCommand, stdout=PIPE, cwd=cwd)
+        process2 = Popen(targetCommand, stdin=process.stdout, stdout=PIPE, stderr=PIPE, env=os.environ, cwd=cwd)
         process.wait()
 
         self.__direct_command_output(process2)

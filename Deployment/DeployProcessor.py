@@ -31,4 +31,15 @@ class DeployProcessor(ProcessHandlerMixin):
         Logger.log(SKAIOSKIT + " deployment processor running for: " + self.config['Title'])
 
         for step in self.config['Steps']:
-            Logger.log(step['Type'])
+            if step['Type'] == "PrintMessage":
+                self.__print_message(step)
+            elif step['Type'] == 'ChildDeployment':
+                self.__child_ceployment(step)
+            else:
+                Logger.log("Unknown Deployment Type: " + step['Type'])
+
+    def __print_message(self, step):
+        Logger.log(step['Args']['Message'])
+
+    def __child_ceployment(self, step):
+        self.run_process(['python', '../../deploy'], step['Args']['Dir'])
