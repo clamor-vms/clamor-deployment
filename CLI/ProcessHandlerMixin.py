@@ -40,7 +40,7 @@ class ProcessHandlerMixin(object):
         thread2.start()
 
         process.wait()
-        
+
         thread.join()
         thread2.join()
 

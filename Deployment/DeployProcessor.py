@@ -13,8 +13,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import os
+import sys
 import json
-from pprint import pprint
 
 from Skaioskit.Constants import SKAIOSKIT
 from CLI.Logger import Logger
@@ -24,22 +25,44 @@ from CLI.ProcessHandlerMixin import ProcessHandlerMixin
 class DeployProcessor(ProcessHandlerMixin):
     def __init__(self):
         self.config = None
-        with open('deploy.json') as data_file:    
+        with open('deploy.json') as data_file:
             self.config = json.load(data_file)
 
     def run(self):
         Logger.log(SKAIOSKIT + " deployment processor running for: " + self.config['Title'])
+        if not len(sys.argv) > 1:
+            sys.exit("Missing command parameter")
+        if sys.argv[1] not in self.config["Commands"]:
+            sys.exit("Unknown command " + sys.argv[1])
 
-        for step in self.config['Steps']:
+        self.process_command(self.config["Commands"][sys.argv[1]])
+
+    def process_command(self, command):
+        for required in command['Requires']:
+            if required not in self.config["Commands"]:
+                sys.exit("Unknown command " + required)
+            self.process_command(self.config["Commands"][required])
+
+        for step in command['Steps']:
             if step['Type'] == "PrintMessage":
                 self.__print_message(step)
             elif step['Type'] == 'ChildDeployment':
-                self.__child_ceployment(step)
+                self.__child_deployment(step)
+            elif step['Type'] == 'RunCommand':
+                self.__run_command(step)
             else:
                 Logger.log("Unknown Deployment Type: " + step['Type'])
 
     def __print_message(self, step):
         Logger.log(step['Args']['Message'])
 
-    def __child_ceployment(self, step):
-        self.run_process(['python', '../../deploy'], step['Args']['Dir'])
+    def __child_deployment(self, step):
+        self.run_process(['python', '../../deploy', step['Args']['Command']], step['Args']['Dir'])
+
+    def __run_command(self, step):
+        self.run_process(map(self.__command_template_processor, step['Args']['Command']), None)
+
+    def __command_template_processor(self, token):
+        ret = token
+        ret = ret.replace("${DIR}", os.getcwd())
+        return ret
