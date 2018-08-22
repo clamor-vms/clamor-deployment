@@ -14,6 +14,7 @@
 """
 
 import argparse
+import datetime
 import os
 import sys
 import json
@@ -63,9 +64,14 @@ class DeployProcessor(ProcessHandlerMixin):
                 self.__child_deployment(step)
             elif step['Type'] == 'RunCommand':
                 self.__run_command(step)
+            elif step['Type'] == 'PipeCommand':
+                self.__pipe_command(step)
+            elif step['Type'] == 'DoublePipeCommand':
+                self.__double_pipe_command(step)
             else:
                 Logger.log("Unknown Deployment Type: " + step['Type'])
 
+    # type processors
     def __print_message(self, step):
         Logger.log(step['Args']['Message'])
 
@@ -76,7 +82,24 @@ class DeployProcessor(ProcessHandlerMixin):
     def __run_command(self, step):
         self.run_process(map(self.__command_template_processor, step['Args']['Command']), None)
 
+    def __pipe_command(self, step):
+        self.pipe_processes(
+            map(self.__command_template_processor, step['Args']['Source']),
+            map(self.__command_template_processor, step['Args']['Target']),
+            None
+        )
+
+    def __double_pipe_command(self, step):
+        self.double_pipe_processes(
+            map(self.__command_template_processor, step['Args']['Source']),
+            map(self.__command_template_processor, step['Args']['Target1']),
+            map(self.__command_template_processor, step['Args']['Target2']),
+            None
+        )
+
+    # helper methods
     def __command_template_processor(self, token):
         ret = token
         ret = ret.replace("${DIR}", os.getcwd())
+        ret = ret.replace("${DATETIME}", datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S %Z'))
         return ret

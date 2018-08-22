@@ -25,12 +25,22 @@ class ProcessHandlerMixin(object):
     def run_process(self, command, cwd):
         self.__direct_command_output(Popen(command, stdout=PIPE, stderr=PIPE, cwd=cwd))
 
-    def pipe_processes(self, sourceCommand, targetCommand, cwd):
-        process = Popen(sourceCommand, stdout=PIPE, cwd=cwd)
-        process2 = Popen(targetCommand, stdin=process.stdout, stdout=PIPE, stderr=PIPE, env=os.environ, cwd=cwd)
+    def pipe_processes(self, source_command, target_command, cwd):
+        process = Popen(source_command, stdout=PIPE, cwd=cwd)
+        process2 = Popen(target_command, stdin=process.stdout, stdout=PIPE, stderr=PIPE, env=os.environ, cwd=cwd)
         process.wait()
 
         self.__direct_command_output(process2)
+
+    def double_pipe_processes(self, source_command, target_1_command, target_2_command, cwd):
+        process = Popen(source_command, stdout=PIPE, cwd=cwd)
+        process2 = Popen(target_1_command, stdin=process.stdout, stdout=PIPE, stderr=PIPE, env=os.environ, cwd=cwd)
+        process3 = Popen(target_2_command, stdin=process2.stdout, stdout=PIPE, stderr=PIPE, env=os.environ, cwd=cwd)
+
+        process.wait()
+        process2.wait()
+
+        self.__direct_command_output(process3)
 
     def __direct_command_output(self, process):
         thread = Thread(target=self.__direct_stdout, args=[process])
