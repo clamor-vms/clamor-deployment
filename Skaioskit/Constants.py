@@ -20,6 +20,6 @@ VERSION = "0.0.1-beta"
 APP_STATUS = "Production"
 SUPPORT_EMAIL_ADDRESS = "support@example.com"
 
-#env
+# env
 PRODUCTION = 'prod'
 DEVELOPMENT = 'local'

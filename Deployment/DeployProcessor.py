@@ -13,11 +13,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import argparse
 import os
 import sys
 import json
 
-from Skaioskit.Constants import SKAIOSKIT
+from Skaioskit.Constants import SKAIOSKIT, APP_NAME, VERSION
 from CLI.Logger import Logger
 from CLI.ProcessHandlerMixin import ProcessHandlerMixin
 
@@ -25,23 +26,35 @@ from CLI.ProcessHandlerMixin import ProcessHandlerMixin
 class DeployProcessor(ProcessHandlerMixin):
     def __init__(self):
         self.config = None
+        self.args = self.__parse_args()
+
+        os.chdir(self.args.dir)
+
         with open('deploy.json') as data_file:
             self.config = json.load(data_file)
 
     def run(self):
         Logger.log(SKAIOSKIT + " deployment processor running for: " + self.config['Title'])
-        if not len(sys.argv) > 1:
+        if self.args.command is None:
             sys.exit("Missing command parameter")
-        if sys.argv[1] not in self.config["Commands"]:
-            sys.exit("Unknown command " + sys.argv[1])
+        if self.args.command not in self.config["Commands"]:
+            sys.exit("Unknown command " + self.args.command)
 
-        self.process_command(self.config["Commands"][sys.argv[1]])
+        self.__process_command(self.config["Commands"][self.args.command])
 
-    def process_command(self, command):
+    def __parse_args(self):
+        self.parser = argparse.ArgumentParser()
+        self.parser.add_argument('command', action='store', help="Command Key")
+        self.parser.add_argument('-d', '--dir', action='store', dest='dir', help='Directory where YAML config files is located', default=os.getcwd())
+        self.parser.add_argument('--version', action='version', version=APP_NAME + ' ' + VERSION)
+
+        return self.parser.parse_args()
+
+    def __process_command(self, command):
         for required in command['Requires']:
             if required not in self.config["Commands"]:
                 sys.exit("Unknown command " + required)
-            self.process_command(self.config["Commands"][required])
+            self.__process_command(self.config["Commands"][required])
 
         for step in command['Steps']:
             if step['Type'] == "PrintMessage":
@@ -57,7 +70,8 @@ class DeployProcessor(ProcessHandlerMixin):
         Logger.log(step['Args']['Message'])
 
     def __child_deployment(self, step):
-        self.run_process(['python', '../../deploy', step['Args']['Command']], step['Args']['Dir'])
+
+        self.run_process(['python', 'deploy', step['Args']['Command'], '-d', step['Args']['Dir']], None)
 
     def __run_command(self, step):
         self.run_process(map(self.__command_template_processor, step['Args']['Command']), None)
