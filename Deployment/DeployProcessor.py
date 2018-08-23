@@ -20,6 +20,7 @@ import sys
 import json
 
 from Skaioskit.Constants import SKAIOSKIT, APP_NAME, VERSION
+
 from CLI.Logger import Logger
 from CLI.ProcessHandlerMixin import ProcessHandlerMixin
 
