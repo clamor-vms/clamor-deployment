@@ -17,4 +17,7 @@
 class Logger(object):
     @staticmethod
     def log(message):
+        """!
+        Log a message. Right now this is just printing to stdout, but we could make this more advanced.
+        """
         print(message)

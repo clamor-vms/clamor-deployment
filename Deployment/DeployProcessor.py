@@ -18,6 +18,7 @@ import datetime
 import os
 import sys
 import json
+from shutil import copyfile
 
 from Skaioskit.Constants import SKAIOSKIT, APP_NAME, VERSION
 
@@ -69,6 +70,12 @@ class DeployProcessor(ProcessHandlerMixin):
                 self.__pipe_command(step)
             elif step['Type'] == 'DoublePipeCommand':
                 self.__double_pipe_command(step)
+            elif step['Type'] == 'TriplePipeCommand':
+                self.__triple_pipe_command(step)
+            elif step['Type'] == 'CopyFile':
+                self.__copy_file(step)
+            elif step['Type'] == 'RunTemplate':
+                self.__run_template(step)
             else:
                 Logger.log("Unknown Deployment Type: " + step['Type'])
 
@@ -98,9 +105,40 @@ class DeployProcessor(ProcessHandlerMixin):
             None
         )
 
+    def __triple_pipe_command(self, step):
+        self.triple_pipe_processes(
+            map(self.__command_template_processor, step['Args']['Source']),
+            map(self.__command_template_processor, step['Args']['Target1']),
+            map(self.__command_template_processor, step['Args']['Target2']),
+            map(self.__command_template_processor, step['Args']['Target3']),
+            None
+        )
+
+    def __copy_file(self, step):
+        copyfile(step['Args']['Source'], step['Args']['Target'])
+
+    def __run_template(self, step):
+        data = ""
+
+        with open(step['Args']['File'], 'r') as file:
+            data = file.read()
+
+        data = self.__process_string_template(data)
+
+        with open(step['Args']['File'], 'w') as file:
+            file.write(data)
+
     # helper methods
     def __command_template_processor(self, token):
         ret = token
+
+        ret = self.__process_string_template(ret)
+        return ret
+
+    def __process_string_template(self, data):
+        ret = data
+
         ret = ret.replace("${DIR}", os.getcwd())
-        ret = ret.replace("${DATETIME}", datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S %Z'))
+        ret = ret.replace("${DATETIME}", datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
+
         return ret
