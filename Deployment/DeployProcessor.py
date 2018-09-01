@@ -18,6 +18,8 @@ import datetime
 import os
 import sys
 import json
+import random
+import string
 from shutil import copyfile
 
 from Skaioskit.Constants import SKAIOSKIT, APP_NAME, VERSION
@@ -62,6 +64,8 @@ class DeployProcessor(ProcessHandlerMixin):
         for step in command['Steps']:
             if step['Type'] == "PrintMessage":
                 self.__print_message(step)
+            elif step['Type'] == 'EnsureSecret':
+                self.__ensure_secret(step)
             elif step['Type'] == 'ChildDeployment':
                 self.__child_deployment(step)
             elif step['Type'] == 'RunCommand':
@@ -82,6 +86,13 @@ class DeployProcessor(ProcessHandlerMixin):
     # type processors
     def __print_message(self, step):
         Logger.log(step['Args']['Message'])
+
+    def __ensure_secret(self, step):
+        rnd_str = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(24))
+        self.run_process(
+            ['kubectl', 'create', 'secret', 'generic', step['Args']['Key'], '--from-literal=value=' + rnd_str],
+            None
+        )
 
     def __child_deployment(self, step):
 
@@ -131,7 +142,6 @@ class DeployProcessor(ProcessHandlerMixin):
     # helper methods
     def __command_template_processor(self, token):
         ret = token
-
         ret = self.__process_string_template(ret)
         return ret
 

@@ -42,6 +42,7 @@ class ProcessHandlerMixin(object):
 
         self.__direct_command_output(process3)
 
+    # TODO: This is silly. Let's just create an N Pipe Process that takes a list of processes and does all the piping.
     def triple_pipe_processes(self, source_command, target_1_command, target_2_command, target_3_command, cwd):
         process = Popen(source_command, stdout=PIPE, cwd=cwd)
         process2 = Popen(target_1_command, stdin=process.stdout, stdout=PIPE, stderr=PIPE, env=os.environ, cwd=cwd)
