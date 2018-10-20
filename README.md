@@ -1,1 +1,1 @@
-# skaioskit-deployment
+# clamor-deployment

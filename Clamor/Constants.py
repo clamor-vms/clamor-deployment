@@ -14,8 +14,8 @@
 """
 
 # define constants
-SKAIOSKIT = "Skaioskit"
-APP_NAME = "Skaioskit DeployTool"
+CLAMOR = "Clamor"
+APP_NAME = "Clamor DeployTool"
 VERSION = "0.0.1-beta"
 APP_STATUS = "Production"
 SUPPORT_EMAIL_ADDRESS = "support@example.com"

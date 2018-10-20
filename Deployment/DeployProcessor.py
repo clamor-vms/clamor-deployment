@@ -22,7 +22,7 @@ import random
 import string
 from shutil import copyfile
 
-from Skaioskit.Constants import SKAIOSKIT, APP_NAME, VERSION
+from Clamor.Constants import CLAMOR, APP_NAME, VERSION
 
 from CLI.Logger import Logger
 from CLI.ProcessHandlerMixin import ProcessHandlerMixin
@@ -39,7 +39,7 @@ class DeployProcessor(ProcessHandlerMixin):
             self.config = json.load(data_file)
 
     def run(self):
-        Logger.log(SKAIOSKIT + " deployment processor running for: " + self.config['Title'])
+        Logger.log(CLAMOR + " deployment processor running for: " + self.config['Title'])
         if self.args.command is None:
             sys.exit("Missing command parameter")
         if self.args.command not in self.config["Commands"]:

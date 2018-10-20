@@ -15,15 +15,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from Skaioskit.Constants import VERSION, SUPPORT_EMAIL_ADDRESS, SKAIOSKIT, APP_STATUS
+from Clamor.Constants import VERSION, SUPPORT_EMAIL_ADDRESS, CLAMOR, APP_STATUS
 from Deployment.DeployProcessor import DeployProcessor
 
-__author__ = SKAIOSKIT
-__copyright__ = "Copyright 2018, " + SKAIOSKIT
-__credits__ = [SKAIOSKIT]
+__author__ = CLAMOR
+__copyright__ = "Copyright 2018, " + CLAMOR
+__credits__ = [CLAMOR]
 __license__ = "AGPLv3"
 __version__ = VERSION
-__maintainer__ = SKAIOSKIT
+__maintainer__ = CLAMOR
 __email__ = SUPPORT_EMAIL_ADDRESS
 __status__ = APP_STATUS
 
