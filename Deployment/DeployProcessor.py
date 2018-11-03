@@ -1,16 +1,16 @@
 """
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import argparse
@@ -51,6 +51,7 @@ class DeployProcessor(ProcessHandlerMixin):
         self.parser = argparse.ArgumentParser()
         self.parser.add_argument('command', action='store', help="Command Key")
         self.parser.add_argument('-d', '--dir', action='store', dest='dir', help='Directory where YAML config files is located', default=os.getcwd())
+        self.parser.add_argument('-r', '--repo', action='store', dest='repo', help='', default='localhost:5000')
         self.parser.add_argument('--version', action='version', version=APP_NAME + ' ' + VERSION)
 
         return self.parser.parse_args()
@@ -95,8 +96,7 @@ class DeployProcessor(ProcessHandlerMixin):
         )
 
     def __child_deployment(self, step):
-
-        self.run_process(['python', 'deploy', step['Args']['Command'], '-d', step['Args']['Dir']], None)
+        self.run_process(['python', 'deploy', step['Args']['Command'], '-d', step['Args']['Dir'], '-r', self.args.repo], None)
 
     def __run_command(self, step):
         self.run_process(map(self.__command_template_processor, step['Args']['Command']), None)
@@ -148,6 +148,8 @@ class DeployProcessor(ProcessHandlerMixin):
     def __process_string_template(self, data):
         ret = data
 
+        # TODO: Setup a better templating engine
+        ret = ret.replace("${DOCKER_REG}", self.args.repo)
         ret = ret.replace("${DIR}", os.getcwd())
         ret = ret.replace("${DATETIME}", datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
 
